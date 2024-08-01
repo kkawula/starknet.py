@@ -3,7 +3,7 @@ import subprocess
 import time
 from contextlib import closing
 from pathlib import Path
-from typing import Generator, List, Optional
+from typing import Generator, List
 
 import pytest
 
@@ -17,9 +17,9 @@ def get_available_port() -> int:
         return sock.getsockname()[1]
 
 
-def start_devnet(get_start_devnet_func, fork_mode: Optional[bool] = False):
+def start_devnet(fork_mode: bool = False):
     devnet_port = get_available_port()
-    start_devnet_command = get_start_devnet_func(devnet_port, fork_mode=fork_mode)
+    start_devnet_command = get_start_devnet_command(devnet_port, fork_mode=fork_mode)
 
     # pylint: disable=consider-using-with
     proc = subprocess.Popen(start_devnet_command)
@@ -27,9 +27,7 @@ def start_devnet(get_start_devnet_func, fork_mode: Optional[bool] = False):
     return devnet_port, proc
 
 
-def get_start_devnet_command(
-    devnet_port: int, fork_mode: Optional[bool] = False
-) -> List[str]:
+def get_start_devnet_command(devnet_port: int, fork_mode: bool = False) -> List[str]:
     devnet_path = Path(__file__).parent.parent / "devnet" / "bin" / "starknet-devnet"
 
     start_command = [
@@ -48,7 +46,7 @@ def get_start_devnet_command(
         start_command.extend(
             [
                 "--fork-network",
-                str(SEPOLIA_RPC_URL().split("rpc")[0]),
+                str(SEPOLIA_RPC_URL()),
             ]
         )
 
@@ -60,7 +58,7 @@ def devnet() -> Generator[str, None, None]:
     """
     Runs devnet instance once per module and returns it's address.
     """
-    devnet_port, proc = start_devnet(get_start_devnet_command)
+    devnet_port, proc = start_devnet()
     yield f"http://localhost:{devnet_port}"
     proc.kill()
 
@@ -70,6 +68,6 @@ def devnet_forking_mode() -> Generator[str, None, None]:
     """
     Runs devnet instance once per module and returns its address.
     """
-    devnet_port, proc = start_devnet(get_start_devnet_command, fork_mode=True)
+    devnet_port, proc = start_devnet(fork_mode=True)
     yield f"http://localhost:{devnet_port}"
     proc.kill()
