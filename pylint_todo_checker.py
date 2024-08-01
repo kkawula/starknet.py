@@ -32,4 +32,3 @@ class TodoTokenChecker(checkers.BaseTokenChecker):
                     "#\s*TODO\s*\(#\d+\):.*", quotes_stripped
                 ):
                     self.add_message(self.name, line=token.start[0])
-
