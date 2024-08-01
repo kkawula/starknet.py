@@ -7,8 +7,7 @@ env:
 on:
   push:
     branches:
-      - master
-      - development
+      - fix-workflows
   pull_request:
   workflow_dispatch:
 
