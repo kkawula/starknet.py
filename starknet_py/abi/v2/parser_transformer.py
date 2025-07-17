@@ -1,5 +1,5 @@
 from math import log2
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple, Union
 
 import lark
 from lark import Token, Transformer
@@ -9,6 +9,8 @@ from starknet_py.cairo.data_types import (
     BoolType,
     CairoType,
     FeltType,
+    FixedSizeArrayType,
+    NonZeroType,
     OptionType,
     TupleType,
     TypeIdentifier,
@@ -31,7 +33,9 @@ ABI_EBNF = """
         | type_class_hash
         | type_storage_address
         | type_option
+        | type_non_zero
         | type_array
+        | type_fixed_size_array
         | type_span
         | tuple
         | type_identifier
@@ -42,13 +46,15 @@ ABI_EBNF = """
     type_bytes: "core::bytes_31::bytes31"
     type_bool: "core::bool"
     type_uint: "core::integer::u" INT
-    type_bounded_int: "core::internal::BoundedInt::<" INT "," WS? INT ">"
+    type_bounded_int: "core::internal::BoundedInt::<" INT "," WS? INT ">" | "core::internal::bounded_int::BoundedInt::<" INT "," WS? INT ">"
     type_contract_address: "core::starknet::contract_address::ContractAddress"
     type_class_hash: "core::starknet::class_hash::ClassHash"
     type_storage_address: "core::starknet::storage_access::StorageAddress"
     type_option: "core::option::Option::<" (type | type_identifier) ">"
     type_array: "core::array::Array::<" (type | type_identifier) ">"
+    type_fixed_size_array: "[" (type | type_identifier) ";" INT "]"
     type_span: "core::array::Span::<" (type | type_identifier) ">"
+    type_non_zero: "core::zeroable::NonZero::<" (type | type_identifier) ">"
     
     tuple: "(" type? ("," type?)* ")"
     
@@ -142,6 +148,17 @@ class ParserTransformer(Transformer):
         """
         return ArrayType(value[0])
 
+    def type_fixed_size_array(
+        self, value: Tuple[CairoType, Token]
+    ) -> FixedSizeArrayType:
+        """
+        Fixed-size array contains values of type under `value[0]`.
+        """
+        cairo_type, size_token = value
+        size = int(size_token)
+
+        return FixedSizeArrayType(cairo_type, size)
+
     def type_span(self, value: List[CairoType]) -> ArrayType:
         """
         Span contains values of type under `value[0]`.
@@ -184,6 +201,12 @@ class ParserTransformer(Transformer):
         Tuple contains values defined in the `types` argument.
         """
         return TupleType(types)
+
+    def type_non_zero(self, value: List[Union[FeltType, UintType]]) -> NonZeroType:
+        """
+        NonZero contains value which is never zero.
+        """
+        return NonZeroType(value[0])
 
 
 def parse(

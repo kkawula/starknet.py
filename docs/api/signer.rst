@@ -36,8 +36,22 @@ KeyPair
 LedgerSigner
 ------------
 
+To use LedgerSigner, you need to install starknetpy with `ledger` extra like this:
+
+.. code-block:: bash
+
+    poetry add starknet_py[ledger]
+
 .. py:module:: starknet_py.net.signer.ledger_signer
 
 .. autoclass:: LedgerSigner
+    :members:
+    :member-order: groupwise
+
+-----------------
+LedgerSigningMode
+-----------------
+
+.. autoclass:: LedgerSigningMode
     :members:
     :member-order: groupwise

@@ -1,16 +1,205 @@
 Migration guide
 ===============
 
+**********************
+0.27.0 Migration guide
+**********************
+
+.. py:currentmodule:: starknet_py.net.signer.ledger_signer
+
+1. Support for clear signing with :class:`LedgerSigner` has been added. It's now the default signing mode (see :class:`LedgerSigningMode`).
+2. ``derivation_path_str`` param has been removed from :class:`LedgerSigner` constructor, while ``account_id``, ``application_name`` and ``signing_mode`` params have been added.
+
+0.27.0 Bugfixes
+---------------
+
+1. ABI parser supports now fixed size arrays.
+
+.. py:currentmodule:: starknet_py.net.client_models
+
+2. ``l1_address`` in :class:`L2ToL1Message` now accepts felts when deserializing.
+
+**********************
+0.26.2 Migration guide
+**********************
+
+.. py:currentmodule:: starknet_py.net.full_node_client
+
+1. If an incompatible RPC version is detected between the node and :class:`FullNodeClient`, a warning will be emitted.
+
+**********************
+0.26.1 Migration guide
+**********************
+
+.. py:currentmodule:: starknet_py.net.client_models
+
+1. Restored ``amount_multiplier`` and ``unit_price_multiplier`` params in :meth:`EstimatedFee.to_resource_bounds()`
+
+2. Using Braavos accounts is temporarily disabled because they don't work with starknet 0.13.5. Please read the `official post <https://community.starknet.io/t/starknet-devtools-for-0-13-5/115495#p-2359168-braavos-compatibility-issues-3>`_ for more details.
+
+0.26.1 Bugfixes
+---------------
+
+1. In :class:`FunctionInvocation`, ``execution_resources`` field is now of type :class:`InnerCallExecutionResources`.
+
+**********************
+0.26.0 Migration guide
+**********************
+
+Version 0.26.0 of **starknet.py** comes with support for RPC 0.8.1!
+
+0.26.0 Targeted versions
+------------------------
+
+- Starknet - `0.13.5 <https://docs.starknet.io/documentation/starknet_versions/version_notes/#version0.13.5>`_
+- RPC - `0.8.1 <https://github.com/starkware-libs/starknet-specs/releases/tag/v0.8.1>`_
+
+.. py:currentmodule:: starknet_py.net.full_node_client
+
+1. New methods have been added: :meth:`~FullNodeClient.get_storage_proof`, :meth:`~FullNodeClient.get_messages_status` and :meth:`~FullNodeClient.get_compiled_casm`.
+
+.. py:currentmodule:: starknet_py.net.client_models
+
+2. ``failure_reason`` field has been added to :class:`TransactionStatusResponse`.
+
+3. ``execution_resources`` and ``is_reverted`` fields have been added to :class:`FunctionInvocation`.
+
+.. py:currentmodule:: starknet_py.net.websockets.websocket_client
+
+4. Added :class:`WebsocketClient` which allows to interact with websockets API.
+
+0.26.0 Breaking changes
+-----------------------
+
+1. ``l1_resource_bounds`` parameter (in transaction methods) has been renamed to ``resource_bounds``, its type has also changed from :class:`~starknet_py.net.client_models.ResourceBounds` to :class:`~starknet_py.net.client_models.ResourceBoundsMapping`.
+
+.. py:currentmodule:: starknet_py.net.client_models
+
+2. :class:`ComputationResources` and :class:`DataResources` have been removed.
+
+3. :class:`ExecutionResources`, :class:`EstimatedFee` have been modified according to new RPC specification.
+
+4. Submitting transactions other than v3 is not possible anymore.
+
+0.26.0 Bugfixes
+---------------
+
+.. py:currentmodule:: starknet_py.net.executable_models
+
+1. Fixed typo in :class:`TestLessThanOrEqualAddress` class name and schema data key.
+
+.. py:currentmodule:: starknet_py.contract
+
+2. Fixed an issue in :meth:`Contract.deploy_contract_v3` where omitting the ``abi`` param caused the node to return an error indicating that the contract was not found.
+
+
+******************************
+0.26.0-rc.1 Migration guide
+******************************
+
+The latest release candidate compatible with Starknet's JSON-RPC v0.8.0.
+
+0.26.0-rc.1 Bugfixes
+--------------------
+
+.. py:currentmodule:: starknet_py.net.executable_models
+
+1. Fixed typo in :class:`TestLessThanOrEqualAddress` class name and schema data key.
+
+.. py:currentmodule:: starknet_py.contract
+
+2. Fixed an issue in :meth:`Contract.deploy_contract_v3` where omitting the ``abi`` param caused the node to return an error indicating that the contract was not found.
+
+******************************
+0.26.0-rc.0 Migration guide
+******************************
+
+The latest release candidate compatible with Starknet's JSON-RPC v0.8.0.
+
+0.26.0-rc.0 Targeted versions
+------------------------------
+
+- Starknet - `0.13.4 <https://docs.starknet.io/documentation/starknet_versions/version_notes/#version0.13.4>`_
+- RPC - `0.8.0 <https://github.com/starkware-libs/starknet-specs/releases/tag/v0.8.0>`_
+
+1. ``l1_resource_bounds`` parameter (in transaction methods) has been renamed to ``resource_bounds``, its type has also changed from :class:`~starknet_py.net.client_models.ResourceBounds` to :class:`~starknet_py.net.client_models.ResourceBoundsMapping`.
+
+.. py:currentmodule:: starknet_py.net.full_node_client
+
+2. New methods have been added: :meth:`~FullNodeClient.get_storage_proof`, :meth:`~FullNodeClient.get_messages_status` and :meth:`~FullNodeClient.get_compiled_casm`.
+
+.. py:currentmodule:: starknet_py.net.client_models
+
+3. :class:`ComputationResources` and :class:`DataResources` have been removed.
+
+4. :class:`ExecutionResources`, :class:`EstimatedFee` have been modified according to new RPC specification.
+
+5. ``failure_reason`` field has been added to :class:`TransactionStatusResponse`.
+
+6. ``execution_resources`` and ``is_reverted`` fields have been added to :class:`FunctionInvocation`.
+
+7. Submitting transactions other than v3 is not possible anymore.
+
+******************************
+0.25.0 Migration guide
+******************************
+
+This version of starknet.py requires Python 3.9 as a minimum version.
+
+.. currentmodule:: starknet_py.cairo.data_types
+
+1. Added :class:`NonZeroType` in order to fix parsing ABI which contains Cairo`s `core::zeroable::NonZero <https://github.com/starkware-libs/cairo/blob/a2b9dddeb3212c8d529538454745b27d7a34a6cd/corelib/src/zeroable.cairo#L78>`_.
+
+2. Added `SNIP-9 <https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-9.md>`_ support to :class:`~starknet_py.net.account.account.Account`. Now it's possible to create a :class:`~starknet_py.net.client_models.Call` for outside execution using :meth:`~starknet_py.net.account.account.Account.sign_outside_execution_call`.
+
+3. All methods and classes which use transactions other than v3 are now deprecated.
+
+0.25.0 Minor changes
+--------------------
+
+1. Added ``keys`` field to :class:`EventType` which contains the list of event fields marked with ``#[key]`` in Cairo code.
+
+******************************
+0.24.3 Migration guide
+******************************
+
+0.24.3 Minor changes
+--------------------
+
+1. Updated `crypto-cpp-py <https://github.com/software-mansion-labs/crypto-cpp-py>`_ to version ``1.4.5``.
+
+.. currentmodule:: starknet_py.net.signer.ledger_signer
+
+2. Ledger support (see :class:`LedgerSigner`) is now optional. To use it, install the package with ``poetry install -E ledger``.
+
+******************************
+0.24.2 Migration guide
+******************************
+
+0.24.2 Minor changes
+--------------------
+
+.. currentmodule:: starknet_py.net.signer.stark_curve_signer
+
+1. Added :meth:`KeyPair.generate` method which allows to generate key pair based on cryptographically strong pseudo-random number.
+
+.. currentmodule:: starknet_py.contract
+
+2. ``abi`` parameter is now optional in :meth:`Contract.deploy_contract_v3`.
+
+3. Added quickfix for ``u96`` parsing for both pre and post ``2.8.0`` Cairo versions.
+
+
 ******************************
 0.24.1 Migration guide
 ******************************
-This version contains a quick fix to parsing ABI for Cairo v2 contracts. Due to new release of compiler, `u96` is now compiled to `BoundedInt` in ABI.
+This version contains a quick fix to parsing ABI for Cairo v2 contracts. Due to new release of compiler, ``u96`` is now compiled to `BoundedInt` in ABI.
 
 0.24.1 Minor changes
 --------------------
 
-1. Fixed parsing ABI that contains `u96` data type.
-2. Fixed `l1_address` deserialization in `L2toL1MessageSchema`.
+1. Fixed parsing ABI that contains ``u96`` data type.
+2. Fixed ``l1_address`` deserialization in ``L2toL1MessageSchema``.
 
 ******************************
 0.24.0 Migration guide

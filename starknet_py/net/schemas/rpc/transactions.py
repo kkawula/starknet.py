@@ -4,6 +4,7 @@ from marshmallow_oneofschema.one_of_schema import OneOfSchema
 from starknet_py.net.client_models import (
     DAMode,
     DeclareTransactionResponse,
+    DeclareTransactionV0,
     DeclareTransactionV1,
     DeclareTransactionV2,
     DeclareTransactionV3,
@@ -17,6 +18,7 @@ from starknet_py.net.client_models import (
     InvokeTransactionV3,
     L1HandlerTransaction,
     L2toL1Message,
+    MessageStatus,
     ResourceBounds,
     ResourceBoundsMapping,
     SentTransactionResponse,
@@ -26,7 +28,6 @@ from starknet_py.net.client_models import (
 )
 from starknet_py.net.schemas.common import (
     DAModeField,
-    EthAddress,
     ExecutionStatusField,
     Felt,
     FinalityStatusField,
@@ -45,7 +46,7 @@ from starknet_py.utils.schema import Schema
 
 class L2toL1MessageSchema(Schema):
     l2_address = Felt(data_key="from_address", required=True)
-    l1_address = EthAddress(data_key="to_address", required=True)
+    l1_address = Felt(data_key="to_address", required=True)
     payload = fields.List(Felt(), data_key="payload", required=True)
 
     @post_load
@@ -93,6 +94,7 @@ class TransactionStatusResponseSchema(Schema):
     execution_status = ExecutionStatusField(
         data_key="execution_status", load_default=None
     )
+    failure_reason = fields.String(data_key="failure_reason", load_default=None)
 
     @post_load
     def make_dataclass(self, data, **kwargs) -> TransactionStatusResponse:
@@ -111,6 +113,9 @@ class ResourceBoundsSchema(Schema):
 class ResourceBoundsMappingSchema(Schema):
     l1_gas = fields.Nested(ResourceBoundsSchema(), data_key="l1_gas", required=True)
     l2_gas = fields.Nested(ResourceBoundsSchema(), data_key="l2_gas", required=True)
+    l1_data_gas = fields.Nested(
+        ResourceBoundsSchema(), data_key="l1_data_gas", required=True
+    )
 
     @post_load
     def make_dataclass(self, data, **kwargs) -> ResourceBoundsMapping:
@@ -172,6 +177,15 @@ class InvokeTransactionV3Schema(TransactionV3Schema):
     @post_load
     def make_transaction(self, data, **kwargs) -> InvokeTransactionV3:
         return InvokeTransactionV3(**data)
+
+
+class DeclareTransactionV0Schema(DeprecatedTransactionSchema):
+    sender_address = Felt(data_key="sender_address", required=True)
+    class_hash = Felt(data_key="class_hash", required=True)
+
+    @post_load
+    def make_dataclass(self, data, **kwargs) -> DeclareTransactionV0:
+        return DeclareTransactionV0(**data)
 
 
 class DeclareTransactionV1Schema(DeprecatedTransactionSchema):
@@ -250,6 +264,7 @@ class DeployAccountTransactionV3Schema(TransactionV3Schema):
 
 class DeclareTransactionSchema(OneOfSchema):
     type_schemas = {
+        "0": DeclareTransactionV0Schema,
         "1": DeclareTransactionV1Schema,
         "2": DeclareTransactionV2Schema,
         "3": DeclareTransactionV3Schema,
@@ -339,3 +354,13 @@ class DeployAccountTransactionResponseSchema(SentTransactionSchema):
     @post_load
     def make_dataclass(self, data, **kwargs) -> DeployAccountTransactionResponse:
         return DeployAccountTransactionResponse(**data)
+
+
+class MessageStatusSchema(Schema):
+    transaction_hash = NumberAsHex(data_key="transaction_hash", required=True)
+    finality_status = StatusField(data_key="finality_status", required=True)
+    failure_reason = fields.String(data_key="failure_reason", load_default=None)
+
+    @post_load
+    def make_dataclass(self, data, **kwargs) -> MessageStatus:
+        return MessageStatus(**data)
